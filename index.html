@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sunfall Standard Clock</title>
+    <style>
+      /* Basic styling */
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: Arial, sans-serif;
+      }
+      #clock {
+        font-size: 2em;
+        color: #333;
+        text-align: center;
+        margin-top: 10px;
+      }
+      #period-label {
+        font-size: 1.2em;
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      /* Analog clock styling */
+      .analog-clock {
+        position: relative;
+        width: 250px;
+        height: 250px;
+        border: 10px solid #333;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          #f1f8ff,
+          #333
+        ); /* Default to day colors */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .hand {
+        position: absolute;
+        width: 50%;
+        height: 2px;
+        background-color: #333;
+        top: 50%;
+        left: 50%;
+        transform-origin: 0% 50%;
+        transform: rotate(0deg);
+      }
+      /* Shade and Breath hands */
+      .shade-hand {
+        width: 40%;
+        background-color: #777;
+      }
+      .breath-hand {
+        width: 30%;
+        background-color: #bbb;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="clock"></div>
+    <div id="period-label"></div>
+
+    <!-- Analog clock display -->
+    <div class="analog-clock" id="analog-clock">
+      <div id="period-hand" class="hand"></div>
+      <div id="shade-hand" class="hand shade-hand"></div>
+      <div id="breath-hand" class="hand breath-hand"></div>
+    </div>
+
+    <script>
+      // Array of labels for each of the 24 Periods
+      const periodLabels = [
+        "Sunset",
+        "First Light",
+        "Evenfall",
+        "Gloaming",
+        "Night's Breath",
+        "Midveil",
+        "Deepnight",
+        "Soul's Rest",
+        "Dawncrest",
+        "Newrise",
+        "Highcrest",
+        "Lightborne",
+        "Midlight",
+        "Glowfall",
+        "Afternoon's Whisper",
+        "Lowfall",
+        "Sundawn",
+        "Eventide",
+        "Veilfall",
+        "Twilight",
+        "Evershade",
+        "Nightcrest",
+        "Darkveil",
+        "Pre-Sunrise",
+      ];
+
+      // Function to get the label for a given Period (1-24)
+      function getPeriodLabel(period) {
+        return periodLabels[period - 1] || "";
+      }
+
+      // Function to get color for day/night Periods
+      function getPeriodColor(period) {
+        // Set colors based on day/night periods
+        if (period >= 6 && period <= 18) {
+          // Day Periods
+          return "radial-gradient(circle, #f1f8ff, #87CEEB)"; // Light blue gradient
+        } else {
+          // Night Periods
+          return "radial-gradient(circle, #2b3d52, #1a2633)"; // Dark blue gradient
+        }
+      }
+
+      // Function to calculate Sunfall Standard time based on local 6:00 PM start
+      function getSunfallTime() {
+        const now = new Date(); // Current local time
+
+        // Adjust to the start of the Sunfall day (6:00 PM local time)
+        let sunfallStart = new Date(now);
+        sunfallStart.setHours(18, 0, 0, 0); // Set to 6:00 PM of the current day
+
+        // If current local time is before 6:00 PM, go back to the previous day's start
+        if (now < sunfallStart) {
+          sunfallStart.setDate(sunfallStart.getDate() - 1); // Set to 6:00 PM of the previous day
+        }
+
+        // Calculate total seconds since the start of the Sunfall day
+        let deltaSeconds = Math.floor((now - sunfallStart) / 1000);
+
+        // Convert delta seconds into Sunfall units
+        const periods = Math.floor(deltaSeconds / 3600); // Each period = 1 hour
+        deltaSeconds %= 3600;
+        const shades = Math.floor(deltaSeconds / 60); // Each shade = 1 minute
+        const breaths = deltaSeconds % 60; // Each breath = 1 second
+
+        // Get label for the current Period
+        const periodLabel = getPeriodLabel(periods + 1);
+
+        // Return formatted Sunfall time and label
+        return {
+          time: `Period ${periods + 1} : Shade ${shades} : Breath ${breaths}`,
+          period: periods + 1,
+          shade: shades,
+          breath: breaths,
+          label: periodLabel,
+        };
+      }
+
+      // Function to update the digital and analog clock display every second
+      function updateClock() {
+        const sunfallTime = getSunfallTime();
+        document.getElementById("clock").innerText = sunfallTime.time;
+        document.getElementById("period-label").innerText = sunfallTime.label;
+
+        // Update analog clock hands for Period, Shade, and Breath
+        const periodHand = document.getElementById("period-hand");
+        const shadeHand = document.getElementById("shade-hand");
+        const breathHand = document.getElementById("breath-hand");
+
+        // Rotate based on current Period, Shade, and Breath
+        periodHand.style.transform = `rotate(${
+          (sunfallTime.period % 24) * (360 / 24)
+        }deg)`;
+        shadeHand.style.transform = `rotate(${
+          sunfallTime.shade * (360 / 60)
+        }deg)`;
+        breathHand.style.transform = `rotate(${
+          sunfallTime.breath * (360 / 60)
+        }deg)`;
+
+        // Update clock background for day/night colors
+        document.getElementById("analog-clock").style.background =
+          getPeriodColor(sunfallTime.period);
+      }
+
+      // Set an interval to update the clock every second (1000 milliseconds)
+      setInterval(updateClock, 1000);
+    </script>
+  </body>
+</html>
