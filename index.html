@@ -10,6 +10,9 @@
         flex-direction: column;
         align-items: center;
         font-family: Arial, sans-serif;
+        margin: 0;
+        height: 100vh;
+        justify-content: center;
       }
       #clock {
         font-size: 2em;
@@ -26,18 +29,18 @@
       /* Analog clock styling */
       .analog-clock {
         position: relative;
-        width: 250px;
-        height: 250px;
-        border: 10px solid #333;
+        width: 300px;
+        height: 300px;
         border-radius: 50%;
         background: radial-gradient(
           circle,
           #f1f8ff,
-          #333
+          #87ceeb
         ); /* Default to day colors */
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
       }
       .hand {
         position: absolute;
@@ -49,7 +52,7 @@
         transform-origin: 0% 50%;
         transform: rotate(0deg);
       }
-      /* Shade and Breath hands */
+      /* Smaller hands for Shades and Breaths */
       .shade-hand {
         width: 40%;
         background-color: #777;
@@ -58,128 +61,132 @@
         width: 30%;
         background-color: #bbb;
       }
+
+      /* Sun and Moon icons */
+      .sun,
+      .moon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+      }
+      .sun {
+        background-color: yellow;
+        box-shadow: 0 0 10px rgba(255, 223, 0, 0.8);
+      }
+      .moon {
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+      }
     </style>
   </head>
   <body>
     <div id="clock"></div>
     <div id="period-label"></div>
 
-    <!-- Analog clock display -->
+    <!-- Analog clock display with sun and moon indicators -->
     <div class="analog-clock" id="analog-clock">
       <div id="period-hand" class="hand"></div>
       <div id="shade-hand" class="hand shade-hand"></div>
       <div id="breath-hand" class="hand breath-hand"></div>
+      <div class="sun" id="sun-icon"></div>
+      <div class="moon" id="moon-icon"></div>
     </div>
 
     <script>
       // Array of labels for each of the 24 Periods
       const periodLabels = [
-        "Sunset",
-        "First Light",
-        "Evenfall",
-        "Gloaming",
-        "Night's Breath",
-        "Midveil",
-        "Deepnight",
-        "Soul's Rest",
-        "Dawncrest",
-        "Newrise",
-        "Highcrest",
-        "Lightborne",
-        "Midlight",
-        "Glowfall",
-        "Afternoon's Whisper",
-        "Lowfall",
-        "Sundawn",
-        "Eventide",
-        "Veilfall",
-        "Twilight",
-        "Evershade",
-        "Nightcrest",
-        "Darkveil",
-        "Pre-Sunrise",
+        "Period 1",
+        "Period 2",
+        "Period 3",
+        "Period 4",
+        "Period 5",
+        "Period 6",
+        "Period 7",
+        "Period 8",
+        "Period 9",
+        "Period 10",
+        "Period 11",
+        "Period 12",
+        "Period 13",
+        "Period 14",
+        "Period 15",
+        "Period 16",
+        "Period 17",
+        "Period 18",
+        "Period 19",
+        "Period 20",
+        "Period 21",
+        "Period 22",
+        "Period 23",
+        "Period 24",
       ];
 
-      // Function to get the label for a given Period (1-24)
-      function getPeriodLabel(period) {
-        return periodLabels[period - 1] || "";
-      }
-
-      // Function to get color for day/night Periods
-      function getPeriodColor(period) {
-        // Set colors based on day/night periods
-        if (period >= 6 && period <= 18) {
-          // Day Periods
-          return "radial-gradient(circle, #f1f8ff, #87CEEB)"; // Light blue gradient
+      // Function to get day/night color themes based on Period
+      function getPeriodTheme(period) {
+        if (period >= 1 && period <= 12) {
+          return "radial-gradient(circle, #2b3d52, #1a2633)"; // Night theme
         } else {
-          // Night Periods
-          return "radial-gradient(circle, #2b3d52, #1a2633)"; // Dark blue gradient
+          return "radial-gradient(circle, #f1f8ff, #87CEEB)"; // Day theme
         }
       }
 
-      // Function to calculate Sunfall Standard time based on local 6:00 PM start
+      // Function to calculate Sunfall Standard time
       function getSunfallTime() {
         const now = new Date(); // Current local time
-
-        // Adjust to the start of the Sunfall day (6:00 PM local time)
         let sunfallStart = new Date(now);
         sunfallStart.setHours(18, 0, 0, 0); // Set to 6:00 PM of the current day
-
-        // If current local time is before 6:00 PM, go back to the previous day's start
         if (now < sunfallStart) {
-          sunfallStart.setDate(sunfallStart.getDate() - 1); // Set to 6:00 PM of the previous day
+          sunfallStart.setDate(sunfallStart.getDate() - 1);
         }
 
-        // Calculate total seconds since the start of the Sunfall day
         let deltaSeconds = Math.floor((now - sunfallStart) / 1000);
-
-        // Convert delta seconds into Sunfall units
-        const periods = Math.floor(deltaSeconds / 3600); // Each period = 1 hour
+        const periods = Math.floor(deltaSeconds / 3600);
         deltaSeconds %= 3600;
-        const shades = Math.floor(deltaSeconds / 60); // Each shade = 1 minute
-        const breaths = deltaSeconds % 60; // Each breath = 1 second
+        const shades = Math.floor(deltaSeconds / 60);
+        const breaths = deltaSeconds % 60;
 
-        // Get label for the current Period
-        const periodLabel = getPeriodLabel(periods + 1);
-
-        // Return formatted Sunfall time and label
-        return {
-          time: `Period ${periods + 1} : Shade ${shades} : Breath ${breaths}`,
-          period: periods + 1,
-          shade: shades,
-          breath: breaths,
-          label: periodLabel,
-        };
+        return { period: periods + 1, shade: shades, breath: breaths };
       }
 
-      // Function to update the digital and analog clock display every second
+      // Function to update the clock and background
       function updateClock() {
         const sunfallTime = getSunfallTime();
-        document.getElementById("clock").innerText = sunfallTime.time;
-        document.getElementById("period-label").innerText = sunfallTime.label;
-
-        // Update analog clock hands for Period, Shade, and Breath
         const periodHand = document.getElementById("period-hand");
         const shadeHand = document.getElementById("shade-hand");
         const breathHand = document.getElementById("breath-hand");
 
-        // Rotate based on current Period, Shade, and Breath
-        periodHand.style.transform = `rotate(${
-          (sunfallTime.period % 24) * (360 / 24)
-        }deg)`;
-        shadeHand.style.transform = `rotate(${
-          sunfallTime.shade * (360 / 60)
-        }deg)`;
-        breathHand.style.transform = `rotate(${
-          sunfallTime.breath * (360 / 60)
-        }deg)`;
+        const periodAngle = (sunfallTime.period % 24) * (360 / 24);
+        const shadeAngle = sunfallTime.shade * (360 / 60);
+        const breathAngle = sunfallTime.breath * (360 / 60);
 
-        // Update clock background for day/night colors
-        document.getElementById("analog-clock").style.background =
-          getPeriodColor(sunfallTime.period);
+        periodHand.style.transform = `rotate(${periodAngle}deg)`;
+        shadeHand.style.transform = `rotate(${shadeAngle}deg)`;
+        breathHand.style.transform = `rotate(${breathAngle}deg)`;
+
+        document.getElementById(
+          "clock"
+        ).innerText = `Period ${sunfallTime.period} : Shade ${sunfallTime.shade} : Breath ${sunfallTime.breath}`;
+        document.getElementById("period-label").innerText =
+          periodLabels[sunfallTime.period - 1];
+
+        const clockElement = document.getElementById("analog-clock");
+        clockElement.style.background = getPeriodTheme(sunfallTime.period);
+
+        // Update sun and moon positions
+        const sunIcon = document.getElementById("sun-icon");
+        const moonIcon = document.getElementById("moon-icon");
+
+        sunIcon.style.transform = `rotate(${
+          (sunfallTime.period - 12) * (360 / 24)
+        }deg) translate(-130px)`;
+        moonIcon.style.transform = `rotate(${
+          sunfallTime.period * (360 / 24)
+        }deg) translate(-130px)`;
       }
 
-      // Set an interval to update the clock every second (1000 milliseconds)
       setInterval(updateClock, 1000);
     </script>
   </body>
