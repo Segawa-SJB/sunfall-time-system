@@ -79,7 +79,12 @@
             "Veilfall", "Twilight", "Evershade", "Nightcrest", "Darkveil", "Pre-Sunrise"
         ];
 
-        const dayLabels = ["First Day", "Second Day", "Third Day", "Fourth Day", "Fifth Day", "Sixth Day", "Seventh Day"];
+        const dayLabels = [
+            "First Day (Sunday)", "Second Day (Monday)", "Third Day (Tuesday)", 
+            "Fourth Day (Wednesday)", "Fifth Day (Thursday)", "Sixth Day (Friday)", 
+            "Seventh Day (Saturday)"
+        ];
+
         let reminder = null; // Store reminder
 
         function getPeriodLabel(period) {
@@ -94,7 +99,7 @@
             }
         }
 
-        // Calculate the Sunfall day of the week (First Day through Seventh Day)
+        // Calculate the Sunfall day of the week (First Day through Seventh Day) and standard day
         function getSunfallDay() {
             const now = new Date();
             const referenceDate = new Date(2024, 0, 7, 18, 0, 0); // Sunday at 6:00 PM as the start
