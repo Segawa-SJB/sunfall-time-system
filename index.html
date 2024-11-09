@@ -4,44 +4,22 @@
     <meta charset="UTF-8">
     <title>Sunfall Standard Clock</title>
     <style>
-        /* Basic styling */
-        body { display: flex; flex-direction: column; align-items: center; font-family: Arial, sans-serif; margin: 0; height: 100vh; justify-content: center; overflow: hidden; color: #333; }
-        #clock, #day-label, #period-label { text-align: center; margin-top: 10px; }
-        #clock { font-size: 2em; }
-        #day-label, #period-label { font-size: 1.2em; }
-
-        /* Background for the clock area for contrast */
-        .clock-container {
-            position: relative;
-            padding: 20px;
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            z-index: 2;
-        }
-
-        /* Dynamic background transitions */
-        .dynamic-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            transition: background 2s ease;
-        }
-
+        body { display: flex; flex-direction: column; align-items: center; font-family: Arial, sans-serif; margin: 0; height: 100vh; justify-content: center; }
+        #clock { font-size: 2em; color: #333; text-align: center; margin-top: 10px; }
+        #day-label { font-size: 1.2em; color: #666; margin-bottom: 10px; }
+        #period-label { font-size: 1.2em; color: #666; margin-bottom: 20px; }
+        
         /* Analog clock styling */
         .analog-clock {
             position: relative;
             width: 300px;
             height: 300px;
             border-radius: 50%;
+            background: radial-gradient(circle, #f1f8ff, #87CEEB); /* Default to day colors */
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            background: radial-gradient(circle, rgba(240, 240, 240, 0.9), rgba(220, 220, 220, 0.7)); /* Semi-transparent background */
         }
         .hand {
             position: absolute;
@@ -53,8 +31,8 @@
             transform-origin: 0% 50%;
             transform: rotate(0deg);
         }
-        .shade-hand { width: 40%; background-color: #555; }
-        .breath-hand { width: 30%; background-color: #777; }
+        .shade-hand { width: 40%; background-color: #777; }
+        .breath-hand { width: 30%; background-color: #bbb; }
 
         /* Sun and Moon icons */
         .sun, .moon {
@@ -64,65 +42,34 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            opacity: 0.9;
         }
         .sun { background-color: yellow; box-shadow: 0 0 10px rgba(255, 223, 0, 0.8); }
         .moon { background-color: #FFF; box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); }
-
-        /* Particle effects for stars and sunlight */
-        .stars, .sunrays {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-        }
-        .star, .sunray {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.6; /* Reduced opacity */
-        }
-        .star { width: 2px; height: 2px; animation: twinkle 1s infinite alternate; }
-        .sunray { width: 4px; height: 4px; background: yellow; animation: sunbeam 3s linear infinite; }
-
-        /* Star twinkling animation */
-        @keyframes twinkle {
-            from { opacity: 0.3; }
-            to { opacity: 0.6; }
-        }
-
-        /* Sunbeam animation */
-        @keyframes sunbeam {
-            from { transform: scale(0.5); opacity: 0.3; }
-            to { transform: scale(1.5); opacity: 0; }
-        }
     </style>
 </head>
 <body>
-    <div class="dynamic-background" id="dynamic-background"></div>
-    
-    <!-- Clock container with contrast background -->
-    <div class="clock-container">
-        <div id="clock"></div>
-        <div id="day-label"></div>
-        <div id="period-label"></div>
+    <div id="clock"></div>
+    <div id="day-label"></div>
+    <div id="period-label"></div>
 
-        <!-- Analog clock display with sun and moon indicators -->
-        <div class="analog-clock" id="analog-clock">
-            <div id="period-hand" class="hand"></div>
-            <div id="shade-hand" class="hand shade-hand"></div>
-            <div id="breath-hand" class="hand breath-hand"></div>
-            <div class="sun" id="sun-icon"></div>
-            <div class="moon" id="moon-icon"></div>
-        </div>
+    <!-- Analog clock display with sun and moon indicators -->
+    <div class="analog-clock" id="analog-clock">
+        <div id="period-hand" class="hand"></div>
+        <div id="shade-hand" class="hand shade-hand"></div>
+        <div id="breath-hand" class="hand breath-hand"></div>
+        <div class="sun" id="sun-icon"></div>
+        <div class="moon" id="moon-icon"></div>
     </div>
 
-    <!-- Stars and Sunrays Particle Effects -->
-    <div class="stars" id="stars"></div>
-    <div class="sunrays" id="sunrays"></div>
+    <!-- Event Reminder Form -->
+    <div>
+        <h3>Set Sunfall Event Reminder</h3>
+        <label>Period:</label>
+        <input type="number" id="event-period" min="1" max="24" placeholder="1-24">
+        <label>Shade:</label>
+        <input type="number" id="event-shade" min="0" max="59" placeholder="0-59">
+        <button onclick="setReminder()">Set Reminder</button>
+    </div>
 
     <script>
         const periodLabels = [
@@ -138,63 +85,24 @@
             "Seventh Day (Saturday)"
         ];
 
+        let reminder = null; // Store reminder
+
         function getPeriodLabel(period) {
             return (periodLabels[period - 1] || "");
         }
 
         function getPeriodTheme(period) {
-            const background = document.getElementById("dynamic-background");
-            const clockContainer = document.querySelector(".clock-container");
             if (period >= 1 && period <= 12) {
-                background.style.background = "radial-gradient(circle, #1a2633, #0c1a29)"; // Night sky
-                document.body.style.color = "#FFF"; // White text for night
-                clockContainer.style.background = "rgba(30, 30, 30, 0.8)"; // Darker contrast background for clock
-                displayStars();
-                hideSunRays();
+                return "radial-gradient(circle, #2b3d52, #1a2633)"; // Night theme
             } else {
-                background.style.background = "radial-gradient(circle, #f1f8ff, #87CEEB)"; // Day sky
-                document.body.style.color = "#333"; // Dark text for day
-                clockContainer.style.background = "rgba(255, 255, 255, 0.9)"; // Lighter contrast background for clock
-                displaySunRays();
-                hideStars();
+                return "radial-gradient(circle, #f1f8ff, #87CEEB)"; // Day theme
             }
         }
 
-        function displayStars() {
-            const stars = document.getElementById("stars");
-            stars.innerHTML = "";
-            for (let i = 0; i < 100; i++) {
-                const star = document.createElement("div");
-                star.className = "star";
-                star.style.top = `${Math.random() * 100}%`;
-                star.style.left = `${Math.random() * 100}%`;
-                stars.appendChild(star);
-            }
-        }
-
-        function hideStars() {
-            document.getElementById("stars").innerHTML = "";
-        }
-
-        function displaySunRays() {
-            const sunrays = document.getElementById("sunrays");
-            sunrays.innerHTML = "";
-            for (let i = 0; i < 50; i++) {
-                const sunray = document.createElement("div");
-                sunray.className = "sunray";
-                sunray.style.top = `${Math.random() * 100}%`;
-                sunray.style.left = `${Math.random() * 100}%`;
-                sunrays.appendChild(sunray);
-            }
-        }
-
-        function hideSunRays() {
-            document.getElementById("sunrays").innerHTML = "";
-        }
-
+        // Calculate the Sunfall day of the week, starting today as First Day (Sunday)
         function getSunfallDay() {
             const now = new Date();
-            const referenceDate = new Date();
+            const referenceDate = new Date(); // Use today's date as the First Day starting at 6 PM
             referenceDate.setHours(18, 0, 0, 0);
             const msInSunfallDay = 24 * 60 * 60 * 1000; // 24 hours in ms
             const daysElapsed = (Math.floor((now - referenceDate) / msInSunfallDay) % 7 + 7) % 7;
@@ -236,13 +144,42 @@
             document.getElementById('day-label').innerText = getSunfallDay();
             document.getElementById('period-label').innerText = getPeriodLabel(sunfallTime.period);
 
-            getPeriodTheme(sunfallTime.period);
+            const clockElement = document.getElementById('analog-clock');
+            clockElement.style.background = getPeriodTheme(sunfallTime.period);
 
             const sunIcon = document.getElementById('sun-icon');
             const moonIcon = document.getElementById('moon-icon');
 
             sunIcon.style.transform = `rotate(${(sunfallTime.period - 12) * (360 / 24)}deg) translate(-130px)`;
             moonIcon.style.transform = `rotate(${sunfallTime.period * (360 / 24)}deg) translate(-130px)`;
+
+            if (reminder && sunfallTime.period === reminder.period && sunfallTime.shade === reminder.shade) {
+                sendNotification(`Sunfall Reminder: Period ${reminder.period}, Shade ${reminder.shade} reached!`);
+                reminder = null; // Clear reminder after notification
+            }
+        }
+
+        function setReminder() {
+            const period = parseInt(document.getElementById('event-period').value);
+            const shade = parseInt(document.getElementById('event-shade').value);
+            if (period >= 1 && period <= 24 && shade >= 0 && shade < 60) {
+                reminder = { period, shade };
+                alert(`Reminder set for Period ${period}, Shade ${shade}!`);
+            } else {
+                alert("Invalid Period or Shade. Please enter values within the range.");
+            }
+        }
+
+        function sendNotification(message) {
+            if (Notification.permission === "granted") {
+                new Notification(message);
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification(message);
+                    }
+                });
+            }
         }
 
         setInterval(updateClock, 1000);
