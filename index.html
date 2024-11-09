@@ -99,12 +99,12 @@
             }
         }
 
-        // Calculate the Sunfall day of the week (First Day through Seventh Day) and standard day
+        // Calculate the Sunfall day of the week starting from Sunday as First Day
         function getSunfallDay() {
             const now = new Date();
             const referenceDate = new Date(2024, 0, 7, 18, 0, 0); // Sunday at 6:00 PM as the start
             const msInSunfallDay = 24 * 60 * 60 * 1000; // 24 hours in ms
-            const daysElapsed = Math.floor((now - referenceDate) / msInSunfallDay) % 7;
+            const daysElapsed = (Math.floor((now - referenceDate) / msInSunfallDay) % 7 + 7) % 7;
             return dayLabels[daysElapsed];
         }
 
