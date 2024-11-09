@@ -6,6 +6,7 @@
     <style>
         body { display: flex; flex-direction: column; align-items: center; font-family: Arial, sans-serif; margin: 0; height: 100vh; justify-content: center; }
         #clock { font-size: 2em; color: #333; text-align: center; margin-top: 10px; }
+        #day-label { font-size: 1.2em; color: #666; margin-bottom: 10px; }
         #period-label { font-size: 1.2em; color: #666; margin-bottom: 20px; }
         
         /* Analog clock styling */
@@ -48,8 +49,8 @@
 </head>
 <body>
     <div id="clock"></div>
-    <div id="period-label"></div>
     <div id="day-label"></div>
+    <div id="period-label"></div>
 
     <!-- Analog clock display with sun and moon indicators -->
     <div class="analog-clock" id="analog-clock">
@@ -71,7 +72,6 @@
     </div>
 
     <script>
-        // Array of labels for each of the 24 Periods
         const periodLabels = [
             "Sunset", "First Light", "Evenfall", "Gloaming", "Night's Breath", "Midveil", 
             "Deepnight", "Soul's Rest", "Dawncrest", "Newrise", "Highcrest", "Lightborne", 
@@ -79,13 +79,11 @@
             "Veilfall", "Twilight", "Evershade", "Nightcrest", "Darkveil", "Pre-Sunrise"
         ];
 
-        // Days of the week in Sunfall Standard time
         const dayLabels = ["First Day", "Second Day", "Third Day", "Fourth Day", "Fifth Day", "Sixth Day", "Seventh Day"];
-
         let reminder = null; // Store reminder
 
         function getPeriodLabel(period) {
-            return (periodLabels[period - 1] || ""); // Only use provided labels
+            return (periodLabels[period - 1] || "");
         }
 
         function getPeriodTheme(period) {
@@ -96,11 +94,19 @@
             }
         }
 
-        // Function to calculate Sunfall time and day based on 6:00 PM local start
+        // Calculate the Sunfall day of the week (First Day through Seventh Day)
+        function getSunfallDay() {
+            const now = new Date();
+            const referenceDate = new Date(2024, 0, 7, 18, 0, 0); // Sunday at 6:00 PM as the start
+            const msInSunfallDay = 24 * 60 * 60 * 1000; // 24 hours in ms
+            const daysElapsed = Math.floor((now - referenceDate) / msInSunfallDay) % 7;
+            return dayLabels[daysElapsed];
+        }
+
         function getSunfallTime() {
             const now = new Date();
             let sunfallStart = new Date(now);
-            sunfallStart.setHours(18, 0, 0, 0);
+            sunfallStart.setHours(18, 0, 0, 0); // Set to 6:00 PM of the current day
             if (now < sunfallStart) {
                 sunfallStart.setDate(sunfallStart.getDate() - 1);
             }
@@ -111,14 +117,9 @@
             const shades = Math.floor(deltaSeconds / 60);
             const breaths = deltaSeconds % 60;
 
-            // Calculate the day of the week in Sunfall Standard time
-            const daysSinceSunday = Math.floor((sunfallStart - new Date(sunfallStart.getFullYear(), 0, 1)) / (24 * 60 * 60 * 1000 * 7));
-            const currentDayIndex = (daysSinceSunday % 7);
-
-            return { period: periods + 1, shade: shades, breath: breaths, day: currentDayIndex + 1 };
+            return { period: periods + 1, shade: shades, breath: breaths };
         }
 
-        // Function to update the clock and background
         function updateClock() {
             const sunfallTime = getSunfallTime();
             const periodHand = document.getElementById('period-hand');
@@ -134,8 +135,8 @@
             breathHand.style.transform = `rotate(${breathAngle}deg)`;
 
             document.getElementById('clock').innerText = `Period ${sunfallTime.period} : Shade ${sunfallTime.shade} : Breath ${sunfallTime.breath}`;
+            document.getElementById('day-label').innerText = getSunfallDay();
             document.getElementById('period-label').innerText = getPeriodLabel(sunfallTime.period);
-            document.getElementById('day-label').innerText = `Day: ${dayLabels[sunfallTime.day - 1]}`;
 
             const clockElement = document.getElementById('analog-clock');
             clockElement.style.background = getPeriodTheme(sunfallTime.period);
@@ -175,4 +176,7 @@
             }
         }
 
-        setInterval(updateClock, 1000
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
