@@ -5,11 +5,21 @@
     <title>Sunfall Standard Clock</title>
     <style>
         /* Basic styling */
-        body { display: flex; flex-direction: column; align-items: center; font-family: Arial, sans-serif; margin: 0; height: 100vh; justify-content: center; overflow: hidden; }
-        #clock { font-size: 2em; color: #333; text-align: center; margin-top: 10px; }
-        #day-label { font-size: 1.2em; color: #666; margin-bottom: 10px; }
-        #period-label { font-size: 1.2em; color: #666; margin-bottom: 20px; }
-        
+        body { display: flex; flex-direction: column; align-items: center; font-family: Arial, sans-serif; margin: 0; height: 100vh; justify-content: center; overflow: hidden; color: #333; }
+        #clock, #day-label, #period-label { text-align: center; margin-top: 10px; }
+        #clock { font-size: 2em; }
+        #day-label, #period-label { font-size: 1.2em; }
+
+        /* Background for the clock area for contrast */
+        .clock-container {
+            position: relative;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+
         /* Dynamic background transitions */
         .dynamic-background {
             position: absolute;
@@ -31,7 +41,7 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            background: radial-gradient(circle, #f1f8ff, #87CEEB); /* Default to day */
+            background: radial-gradient(circle, rgba(240, 240, 240, 0.9), rgba(220, 220, 220, 0.7)); /* Semi-transparent background */
         }
         .hand {
             position: absolute;
@@ -43,8 +53,8 @@
             transform-origin: 0% 50%;
             transform: rotate(0deg);
         }
-        .shade-hand { width: 40%; background-color: #777; }
-        .breath-hand { width: 30%; background-color: #bbb; }
+        .shade-hand { width: 40%; background-color: #555; }
+        .breath-hand { width: 30%; background-color: #777; }
 
         /* Sun and Moon icons */
         .sun, .moon {
@@ -54,6 +64,7 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
+            opacity: 0.9;
         }
         .sun { background-color: yellow; box-shadow: 0 0 10px rgba(255, 223, 0, 0.8); }
         .moon { background-color: #FFF; box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); }
@@ -72,37 +83,41 @@
             position: absolute;
             background: white;
             border-radius: 50%;
-            opacity: 0.8;
+            opacity: 0.6; /* Reduced opacity */
         }
         .star { width: 2px; height: 2px; animation: twinkle 1s infinite alternate; }
         .sunray { width: 4px; height: 4px; background: yellow; animation: sunbeam 3s linear infinite; }
 
         /* Star twinkling animation */
         @keyframes twinkle {
-            from { opacity: 0.5; }
-            to { opacity: 1; }
+            from { opacity: 0.3; }
+            to { opacity: 0.6; }
         }
 
         /* Sunbeam animation */
         @keyframes sunbeam {
-            from { transform: scale(0.5); opacity: 0.5; }
+            from { transform: scale(0.5); opacity: 0.3; }
             to { transform: scale(1.5); opacity: 0; }
         }
     </style>
 </head>
 <body>
     <div class="dynamic-background" id="dynamic-background"></div>
-    <div id="clock"></div>
-    <div id="day-label"></div>
-    <div id="period-label"></div>
+    
+    <!-- Clock container with contrast background -->
+    <div class="clock-container">
+        <div id="clock"></div>
+        <div id="day-label"></div>
+        <div id="period-label"></div>
 
-    <!-- Analog clock display with sun and moon indicators -->
-    <div class="analog-clock" id="analog-clock">
-        <div id="period-hand" class="hand"></div>
-        <div id="shade-hand" class="hand shade-hand"></div>
-        <div id="breath-hand" class="hand breath-hand"></div>
-        <div class="sun" id="sun-icon"></div>
-        <div class="moon" id="moon-icon"></div>
+        <!-- Analog clock display with sun and moon indicators -->
+        <div class="analog-clock" id="analog-clock">
+            <div id="period-hand" class="hand"></div>
+            <div id="shade-hand" class="hand shade-hand"></div>
+            <div id="breath-hand" class="hand breath-hand"></div>
+            <div class="sun" id="sun-icon"></div>
+            <div class="moon" id="moon-icon"></div>
+        </div>
     </div>
 
     <!-- Stars and Sunrays Particle Effects -->
@@ -129,12 +144,17 @@
 
         function getPeriodTheme(period) {
             const background = document.getElementById("dynamic-background");
+            const clockContainer = document.querySelector(".clock-container");
             if (period >= 1 && period <= 12) {
                 background.style.background = "radial-gradient(circle, #1a2633, #0c1a29)"; // Night sky
+                document.body.style.color = "#FFF"; // White text for night
+                clockContainer.style.background = "rgba(30, 30, 30, 0.8)"; // Darker contrast background for clock
                 displayStars();
                 hideSunRays();
             } else {
                 background.style.background = "radial-gradient(circle, #f1f8ff, #87CEEB)"; // Day sky
+                document.body.style.color = "#333"; // Dark text for day
+                clockContainer.style.background = "rgba(255, 255, 255, 0.9)"; // Lighter contrast background for clock
                 displaySunRays();
                 hideStars();
             }
@@ -174,7 +194,7 @@
 
         function getSunfallDay() {
             const now = new Date();
-            const referenceDate = new Date(); // Use today's date as the First Day starting at 6 PM
+            const referenceDate = new Date();
             referenceDate.setHours(18, 0, 0, 0);
             const msInSunfallDay = 24 * 60 * 60 * 1000; // 24 hours in ms
             const daysElapsed = (Math.floor((now - referenceDate) / msInSunfallDay) % 7 + 7) % 7;
