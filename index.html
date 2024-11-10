@@ -6,8 +6,6 @@
     <style>
         body { display: flex; flex-direction: column; align-items: center; font-family: Arial, sans-serif; margin: 0; height: 100vh; justify-content: center; }
         #clock { font-size: 2em; color: #333; text-align: center; margin-top: 10px; }
-        #day-label { font-size: 1.2em; color: #666; margin-bottom: 10px; }
-        #period-label { font-size: 1.2em; color: #666; margin-bottom: 20px; }
         
         /* Analog clock styling */
         .analog-clock {
@@ -19,9 +17,8 @@
             display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
         .hand {
-            position: absolute;
-            width: 50%; height: 2px; background-color: #333; top: 50%; left: 50%;
-            transform-origin: 0% 50%; transform: rotate(0deg);
+            position: absolute; width: 50%; height: 2px; background-color: #333;
+            top: 50%; left: 50%; transform-origin: 0% 50%; transform: rotate(0deg);
         }
         .shade-hand { width: 40%; background-color: #777; }
         .breath-hand { width: 30%; background-color: #bbb; }
@@ -36,8 +33,6 @@
 </head>
 <body>
     <div id="clock"></div>
-    <div id="day-label"></div>
-    <div id="period-label"></div>
 
     <!-- Analog clock display with sun and moon indicators -->
     <div class="analog-clock" id="analog-clock">
@@ -48,36 +43,7 @@
         <div class="moon" id="moon-icon"></div>
     </div>
 
-    <!-- Event Reminder Form -->
-    <div>
-        <h3>Set Sunfall Event Reminder</h3>
-        <label>Period:</label>
-        <input type="number" id="event-period" min="1" max="24" placeholder="1-24">
-        <label>Shade:</label>
-        <input type="number" id="event-shade" min="0" max="59" placeholder="0-59">
-        <button onclick="setReminder()">Set Reminder</button>
-    </div>
-
     <script>
-        const periodLabels = [
-            "Sunset", "First Light", "Evenfall", "Gloaming", "Night's Breath", "Midveil", 
-            "Deepnight", "Soul's Rest", "Dawncrest", "Newrise", "Highcrest", "Lightborne", 
-            "Midlight", "Glowfall", "Afternoon's Whisper", "Lowfall", "Sundawn", "Eventide",
-            "Veilfall", "Twilight", "Evershade", "Nightcrest", "Darkveil", "Pre-Sunrise"
-        ];
-
-        const dayLabels = [
-            "First Day (Sunday)", "Second Day (Monday)", "Third Day (Tuesday)", 
-            "Fourth Day (Wednesday)", "Fifth Day (Thursday)", "Sixth Day (Friday)", 
-            "Seventh Day (Saturday)"
-        ];
-
-        let reminder = null; // Store reminder
-
-        function getPeriodLabel(period) {
-            return (periodLabels[period - 1] || "");
-        }
-
         function getPeriodTheme(period) {
             if (period >= 1 && period <= 12) {
                 return "radial-gradient(circle, #2b3d52, #1a2633)"; // Night theme
@@ -86,19 +52,7 @@
             }
         }
 
-        // Calculate the Sunfall day of the week based on 6:00 PM start
-        function getSunfallDay() {
-            const now = new Date();
-
-            // Set a fixed reference point as the start of First Day (Sunday) at 6:00 PM
-            const referenceDate = new Date(2024, 0, 7, 18, 0, 0); // January 7, 2024, 6:00 PM (Sunday)
-            const msInSunfallDay = 24 * 60 * 60 * 1000; // 24 hours in ms
-
-            // Calculate the number of days elapsed since the reference day in Sunfall Standard Time
-            const daysElapsed = Math.floor((now - referenceDate) / msInSunfallDay) % 7;
-            return dayLabels[daysElapsed];
-        }
-
+        // Calculate Sunfall Standard time based on 6:00 PM start
         function getSunfallTime() {
             const now = new Date();
             let sunfallStart = new Date(now);
@@ -131,8 +85,6 @@
             breathHand.style.transform = `rotate(${breathAngle}deg)`;
 
             document.getElementById('clock').innerText = `Period ${sunfallTime.period} : Shade ${sunfallTime.shade} : Breath ${sunfallTime.breath}`;
-            document.getElementById('day-label').innerText = getSunfallDay();
-            document.getElementById('period-label').innerText = getPeriodLabel(sunfallTime.period);
 
             const clockElement = document.getElementById('analog-clock');
             clockElement.style.background = getPeriodTheme(sunfallTime.period);
@@ -142,34 +94,6 @@
 
             sunIcon.style.transform = `rotate(${(sunfallTime.period - 12) * (360 / 24)}deg) translate(-130px)`;
             moonIcon.style.transform = `rotate(${sunfallTime.period * (360 / 24)}deg) translate(-130px)`;
-
-            if (reminder && sunfallTime.period === reminder.period && sunfallTime.shade === reminder.shade) {
-                sendNotification(`Sunfall Reminder: Period ${reminder.period}, Shade ${reminder.shade} reached!`);
-                reminder = null; // Clear reminder after notification
-            }
-        }
-
-        function setReminder() {
-            const period = parseInt(document.getElementById('event-period').value);
-            const shade = parseInt(document.getElementById('event-shade').value);
-            if (period >= 1 && period <= 24 && shade >= 0 && shade < 60) {
-                reminder = { period, shade };
-                alert(`Reminder set for Period ${period}, Shade ${shade}!`);
-            } else {
-                alert("Invalid Period or Shade. Please enter values within the range.");
-            }
-        }
-
-        function sendNotification(message) {
-            if (Notification.permission === "granted") {
-                new Notification(message);
-            } else if (Notification.permission !== "denied") {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        new Notification(message);
-                    }
-                });
-            }
         }
 
         setInterval(updateClock, 1000);
