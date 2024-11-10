@@ -99,13 +99,20 @@
             }
         }
 
-        // Calculate the Sunfall day of the week, starting today as First Day (Sunday)
+        // Calculate the Sunfall day of the week with 6:00 PM as the start of each day
         function getSunfallDay() {
             const now = new Date();
-            const referenceDate = new Date(); // Use today's date as the First Day starting at 6 PM
-            referenceDate.setHours(18, 0, 0, 0);
-            const msInSunfallDay = 24 * 60 * 60 * 1000; // 24 hours in ms
-            const daysElapsed = (Math.floor((now - referenceDate) / msInSunfallDay) % 7 + 7) % 7;
+            const referenceDate = new Date();
+            referenceDate.setHours(18, 0, 0, 0); // Set reference time to today at 6:00 PM
+            const msInSunfallDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+            // If it's before 6:00 PM, go to the previous day at 6:00 PM as the reference
+            if (now < referenceDate) {
+                referenceDate.setDate(referenceDate.getDate() - 1);
+            }
+
+            // Calculate the number of days passed since Sunday at 6:00 PM (reference point)
+            const daysElapsed = Math.floor((now - referenceDate) / msInSunfallDay) % 7;
             return dayLabels[daysElapsed];
         }
 
