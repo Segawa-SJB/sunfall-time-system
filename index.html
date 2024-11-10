@@ -16,32 +16,19 @@
             height: 300px;
             border-radius: 50%;
             background: radial-gradient(circle, #f1f8ff, #87CEEB); /* Default to day colors */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
         .hand {
             position: absolute;
-            width: 50%;
-            height: 2px;
-            background-color: #333;
-            top: 50%;
-            left: 50%;
-            transform-origin: 0% 50%;
-            transform: rotate(0deg);
+            width: 50%; height: 2px; background-color: #333; top: 50%; left: 50%;
+            transform-origin: 0% 50%; transform: rotate(0deg);
         }
         .shade-hand { width: 40%; background-color: #777; }
         .breath-hand { width: 30%; background-color: #bbb; }
 
         /* Sun and Moon icons */
         .sun, .moon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+            position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; border-radius: 50%;
         }
         .sun { background-color: yellow; box-shadow: 0 0 10px rgba(255, 223, 0, 0.8); }
         .moon { background-color: #FFF; box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); }
@@ -99,19 +86,15 @@
             }
         }
 
-        // Calculate the Sunfall day of the week with 6:00 PM as the start of each day
+        // Calculate the Sunfall day of the week based on 6:00 PM start
         function getSunfallDay() {
             const now = new Date();
-            const referenceDate = new Date();
-            referenceDate.setHours(18, 0, 0, 0); // Set reference time to today at 6:00 PM
-            const msInSunfallDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-            // If it's before 6:00 PM, go to the previous day at 6:00 PM as the reference
-            if (now < referenceDate) {
-                referenceDate.setDate(referenceDate.getDate() - 1);
-            }
+            // Set a fixed reference point as the start of First Day (Sunday) at 6:00 PM
+            const referenceDate = new Date(2024, 0, 7, 18, 0, 0); // January 7, 2024, 6:00 PM (Sunday)
+            const msInSunfallDay = 24 * 60 * 60 * 1000; // 24 hours in ms
 
-            // Calculate the number of days passed since Sunday at 6:00 PM (reference point)
+            // Calculate the number of days elapsed since the reference day in Sunfall Standard Time
             const daysElapsed = Math.floor((now - referenceDate) / msInSunfallDay) % 7;
             return dayLabels[daysElapsed];
         }
