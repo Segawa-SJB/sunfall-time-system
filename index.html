@@ -26,7 +26,7 @@
             return daysInMonths[month];
         }
 
-        // Function to get the current Sunfall date and time
+        // Function to get the current Sunfall date and time, synchronized at 6:00 PM
         function getSunfallDateTime() {
             const now = new Date(); // Current local time
             let sunfallStart = new Date(now);
@@ -44,15 +44,18 @@
             const shades = Math.floor(deltaSeconds / 60);     // Each Shade = 1 minute
             const breaths = deltaSeconds % 60;                // Each Breath = 1 second
 
-            // Get the conventional calendar date and weekday
-            const sunfallDay = sunfallStart.getDate();
-            const month = sunfallStart.getMonth();
-            const year = sunfallStart.getFullYear();
-            const weekDay = sunfallStart.getDay(); // Sunday is 0, Saturday is 6
+            // Adjust the date for display to match Sunfall timing
+            let displayDate = new Date(sunfallStart); // Use 6:00 PM reference date
+            displayDate.setDate(sunfallStart.getDate() + (periods === 0 ? 1 : 0)); // Advance date if Period is 1
 
-            // Format the weekDay and date for display
+            // Get the Sunfall weekday and formatted date
+            const weekDay = displayDate.getDay();
+            const year = displayDate.getFullYear();
+            const month = displayDate.getMonth();
+            const day = displayDate.getDate();
+
             return {
-                date: `${year}-${String(month + 1).padStart(2, '0')}-${String(sunfallDay).padStart(2, '0')}`,
+                date: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
                 weekDay: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][weekDay],
                 time: `Period ${periods + 1} : Shade ${shades} : Breath ${breaths}`
             };
