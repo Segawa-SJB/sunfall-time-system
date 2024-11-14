@@ -2,75 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sunfall Standard Time</title>
+    <title>Sunfall Time Tracking System</title>
     <style>
-        /* Styling for the Sunfall display */
+        /* Basic styling */
         body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif; }
-        #sunfall-time { font-size: 2em; color: #333; }
-        #sunfall-date { font-size: 1.5em; color: #555; margin-top: 10px; }
+        #sunfall-time, #sunfall-date, #log { font-size: 1.2em; color: #333; margin: 10px; }
+        #period-label { font-size: 1.5em; font-weight: bold; color: #555; }
     </style>
 </head>
 <body>
-    <div id="sunfall-date">Sunfall Date: Friday</div>
-    <div id="sunfall-time">Period 1 : Shade 00 : Breath 00</div>
+    <div id="sunfall-date">Sunfall Date: -</div>
+    <div id="period-label">Period Label: -</div>
+    <div id="sunfall-time">Period: - , Shade: - , Breath: -</div>
+    <div id="conventional-time">Conventional Time: -</div>
+    <div id="log"></div>
 
     <script>
-        // Initialize the Sunfall day (e.g., "Friday") and set its start time
-        let sunfallDay = "Friday";
-        let sunfallStart = new Date();
-        sunfallStart.setHours(18, 0, 0, 0); // 6:00 PM local time today
+        // Define special period labels and their times
+        const periodLabels = {
+            1: "New Dawn", 6: "Midveil", 12: "Brightwake", 18: "Midlight", 24: "Duskmend"
+        };
 
-        // If the current time is before 6:00 PM, go back to the previous day's 6:00 PM
+        // Initialize Sunfall Date (starts with any sample date, e.g., 05-11-2024)
+        let sunfallDate = new Date();
+        sunfallDate.setHours(18, 0, 0, 0); // Start of the Sunfall day at 6:00 PM
+
+        // Adjust sunfallDate to yesterday if current time is before 6:00 PM
         const now = new Date();
-        if (now < sunfallStart) {
-            sunfallStart.setDate(sunfallStart.getDate() - 1);
+        if (now < sunfallDate) sunfallDate.setDate(sunfallDate.getDate() - 1);
+
+        // Format Sunfall Date as DD-MM-YYYY
+        function formatSunfallDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}-${month}-${year}`;
         }
 
-        // Function to get the current Sunfall Standard Time
-        function getSunfallStandardTime() {
-            const now = new Date(); // Current local time
-            
-            // Check if the day has crossed the 6:00 PM boundary
-            if (now >= sunfallStart) {
-                // Update the Sunfall day if it's past 6:00 PM
-                sunfallStart.setDate(sunfallStart.getDate() + 1);
-                sunfallDay = getNextSunfallDay(sunfallDay); // Advance the Sunfall day
+        // Function to calculate current Sunfall time based on local time
+        function getSunfallTime() {
+            const now = new Date();
+
+            // Day transition check - If current time has crossed 6:00 PM, update Sunfall Date
+            if (now >= sunfallDate) {
+                sunfallDate.setDate(sunfallDate.getDate() + 1); // Move to the next day
+                document.getElementById("log").innerText += `\nDay transition at Period 24, Duskmend. Moving to Sunfall Date ${formatSunfallDate(sunfallDate)}`;
+                sunfallDate.setHours(18, 0, 0, 0); // Reset to 6:00 PM
             }
 
-            // Calculate seconds since the start of the Sunfall day
-            let deltaSeconds = Math.floor((now - sunfallStart) / 1000);
+            // Calculate time elapsed since Sunfall start (6:00 PM)
+            let deltaSeconds = Math.floor((now - sunfallDate) / 1000);
 
-            // Calculate Period, Shade, and Breath
-            const periods = Math.floor(deltaSeconds / 3600);       // 1 Period = 1 Hour
+            // Convert to Sunfall units
+            const period = Math.floor(deltaSeconds / 3600) + 1; // Periods are 1-24
             deltaSeconds %= 3600;
-            const shades = Math.floor(deltaSeconds / 60);         // 1 Shade = 1 Minute
-            const breaths = deltaSeconds % 60;                    // 1 Breath = 1 Second
+            const shade = Math.floor(deltaSeconds / 60);        // 60 shades per period
+            const breath = deltaSeconds % 60;                   // 60 breaths per shade
 
-            // Return the formatted Sunfall time and day
-            return {
-                day: sunfallDay,
-                period: periods + 1, // Periods are 1-24
-                shade: shades,
-                breath: breaths
-            };
+            return { period, shade, breath };
         }
 
-        // Function to get the next day in the Sunfall week
-        function getNextSunfallDay(currentDay) {
-            const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            const currentIndex = daysOfWeek.indexOf(currentDay);
-            return daysOfWeek[(currentIndex + 1) % 7];
-        }
-
-        // Function to update the Sunfall display every second
+        // Function to update display
         function updateSunfallDisplay() {
-            const sunfallTime = getSunfallStandardTime();
-            document.getElementById('sunfall-date').innerText = `Sunfall Date: ${sunfallTime.day}`;
-            document.getElementById('sunfall-time').innerText = 
-                `Period ${sunfallTime.period} : Shade ${sunfallTime.shade.toString().padStart(2, '0')} : Breath ${sunfallTime.breath.toString().padStart(2, '0')}`;
+            const sunfallTime = getSunfallTime();
+            const formattedDate = formatSunfallDate(sunfallDate);
+
+            // Display current Sunfall date
+            document.getElementById('sunfall-date').innerText = `Sunfall Date: ${formattedDate}`;
+
+            // Display the current period label, period, shade, and breath
+            const periodLabel = periodLabels[sunfallTime.period] || `Period ${sunfallTime.period}`;
+            document.getElementById('period-label').innerText = `Period Label: ${periodLabel}`;
+            document.getElementById('sunfall-time').innerText = `Period: ${sunfallTime.period} , Shade: ${sunfallTime.shade.toString().padStart(2, '0')} , Breath: ${sunfallTime.breath.toString().padStart(2, '0')}`;
+            
+            // Display conventional time for reference
+            document.getElementById('conventional-time').innerText = `Conventional Time: ${new Date().toLocaleTimeString()}`;
         }
 
-        // Set an interval to update the display every second
+        // Update display every second
         setInterval(updateSunfallDisplay, 1000);
     </script>
 </body>
