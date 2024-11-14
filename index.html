@@ -2,24 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sunfall Standard Time & Calendar</title>
+    <title>Sunfall Standard Time and Calendar</title>
     <style>
-        /* Styling for the display */
-        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif; }
-        #date, #time { font-size: 2em; margin: 10px; color: #333; }
+        /* Basic styling */
+        body { display: flex; flex-direction: column; align-items: center; font-family: Arial, sans-serif; margin-top: 50px; }
+        #calendar { font-size: 1.5em; color: #333; margin-bottom: 20px; }
+        #clock { font-size: 2em; color: #333; }
     </style>
 </head>
 <body>
-    <div id="date"></div>
-    <div id="time"></div>
+    <div id="calendar"></div>
+    <div id="clock"></div>
 
     <script>
-        // Function to determine if a year is a leap year
+        // Helper function to determine if a year is a leap year
         function isLeapYear(year) {
             return (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
         }
 
-        // Function to get the number of days in each month
+        // Function to get the days in each month, considering leap years
         function getDaysInMonth(month, year) {
             const daysInMonths = [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
             return daysInMonths[month];
@@ -29,42 +30,42 @@
         function getSunfallDateTime() {
             const now = new Date(); // Current local time
             let sunfallStart = new Date(now);
-            sunfallStart.setHours(18, 0, 0, 0); // Set to 6:00 PM local time start for Sunfall day
+            sunfallStart.setHours(18, 0, 0, 0); // Set to 6:00 PM local time as start of Sunfall day
 
-            // Adjust to previous day’s Sunfall start if before 6:00 PM today
+            // If current time is before 6:00 PM, adjust to the previous day's 6:00 PM
             if (now < sunfallStart) {
-                sunfallStart.setDate(sunfallStart.getDate() - 1); // Go back to previous day’s 6:00 PM
+                sunfallStart.setDate(sunfallStart.getDate() - 1);
             }
 
-            // Calculate time units for Sunfall
+            // Calculate the elapsed time since the start of the Sunfall day
             let deltaSeconds = Math.floor((now - sunfallStart) / 1000);
-            const periods = Math.floor(deltaSeconds / 3600);  // Periods = hours
+            const periods = Math.floor(deltaSeconds / 3600);  // Each Period = 1 hour
             deltaSeconds %= 3600;
-            const shades = Math.floor(deltaSeconds / 60);     // Shades = minutes
-            const breaths = deltaSeconds % 60;                // Breaths = seconds
+            const shades = Math.floor(deltaSeconds / 60);     // Each Shade = 1 minute
+            const breaths = deltaSeconds % 60;                // Each Breath = 1 second
 
-            // Current Gregorian date details (matches Sunfall day if after 6:00 PM)
-            const day = sunfallStart.getDate();
-            const month = sunfallStart.getMonth(); // Months are 0-indexed in JavaScript (Jan = 0)
+            // Get the conventional calendar date and weekday
+            const sunfallDay = sunfallStart.getDate();
+            const month = sunfallStart.getMonth();
             const year = sunfallStart.getFullYear();
-            const weekDay = sunfallStart.getDay(); // 0 = Sunday, 6 = Saturday
+            const weekDay = sunfallStart.getDay(); // Sunday is 0, Saturday is 6
 
-            // Return formatted Sunfall time and date information
+            // Format the weekDay and date for display
             return {
-                date: `${year}-${month + 1}-${day}`, // Convert month to 1-based for display
+                date: `${year}-${String(month + 1).padStart(2, '0')}-${String(sunfallDay).padStart(2, '0')}`,
                 weekDay: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][weekDay],
-                sunfallTime: `Period ${periods + 1} : Shade ${shades} : Breath ${breaths}`
+                time: `Period ${periods + 1} : Shade ${shades} : Breath ${breaths}`
             };
         }
 
-        // Function to update both the Sunfall date and time display
+        // Function to update the Sunfall date and time display
         function updateSunfallDisplay() {
             const sunfall = getSunfallDateTime();
-            document.getElementById('date').innerText = `Sunfall Date: ${sunfall.weekDay}, ${sunfall.date}`;
-            document.getElementById('time').innerText = `Sunfall Time: ${sunfall.sunfallTime}`;
+            document.getElementById('calendar').innerText = `Sunfall Date: ${sunfall.weekDay}, ${sunfall.date}`;
+            document.getElementById('clock').innerText = `Sunfall Time: ${sunfall.time}`;
         }
 
-        // Update the display every second to keep Sunfall time accurate
+        // Update the display every second
         setInterval(updateSunfallDisplay, 1000);
     </script>
 </body>
